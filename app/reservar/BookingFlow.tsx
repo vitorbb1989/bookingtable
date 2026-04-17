@@ -5,6 +5,7 @@ import { BookingScreen, type DateOption } from './_components/BookingScreen'
 import HorariosScreen from './_components/HorariosScreen'
 import DadosScreen, { type DadosReserva } from './_components/DadosScreen'
 import ConfirmacaoScreen from './_components/ConfirmacaoScreen'
+import { BetoChat } from './_components/BetoChat'
 import { createReservationAction } from './actions'
 
 type Screen = 'booking' | 'horarios' | 'dados' | 'confirmacao'
@@ -44,76 +45,69 @@ export function BookingFlow({ dates }: BookingFlowProps) {
     setScreen('booking')
   }
 
-  if (screen === 'confirmacao' && confirmation) {
-    return (
-      <ConfirmacaoScreen
-        key={resetKey}
-        nome={confirmation.nome}
-        partySize={partySize}
-        dateLabel={dateLabel}
-        horario={selectedSlotLabel}
-        codigo={confirmation.codigo}
-        ocasiao={confirmation.ocasiao}
-        onNovaReserva={resetFlow}
-      />
-    )
-  }
-
-  if (screen === 'dados') {
-    return (
-      <DadosScreen
-        partySize={partySize}
-        dateLabel={dateLabel}
-        horario={selectedSlotLabel}
-        onBack={() => setScreen('horarios')}
-        onConfirm={async (dados: DadosReserva) => {
-          const result = await createReservationAction({
-            slotStartISO: selectedSlotISO,
-            partySize,
-            dados,
-          })
-          if (result.ok) {
-            setConfirmation({
-              nome: dados.nome,
-              codigo: result.codigo,
-              ocasiao: dados.ocasiao,
-            })
-            setScreen('confirmacao')
-          }
-          return result
-        }}
-      />
-    )
-  }
-
-  if (screen === 'horarios') {
-    return (
-      <HorariosScreen
-        partySize={partySize}
-        dateISO={selectedDate.iso}
-        dateLabel={dateLabel}
-        turno={turno}
-        onBack={() => setScreen('booking')}
-        onConfirm={(slotStart, horarioLabel) => {
-          setSelectedSlotISO(slotStart)
-          setSelectedSlotLabel(horarioLabel)
-          setScreen('dados')
-        }}
-      />
-    )
-  }
-
   return (
-    <BookingScreen
-      partySize={partySize}
-      setPartySize={setPartySize}
-      dateIndex={dateIndex}
-      setDateIndex={setDateIndex}
-      turno={turno}
-      setTurno={setTurno}
-      dates={dates}
-      onContinue={() => setScreen('horarios')}
-    />
+    <>
+      {screen === 'confirmacao' && confirmation ? (
+        <ConfirmacaoScreen
+          key={resetKey}
+          nome={confirmation.nome}
+          partySize={partySize}
+          dateLabel={dateLabel}
+          horario={selectedSlotLabel}
+          codigo={confirmation.codigo}
+          ocasiao={confirmation.ocasiao}
+          onNovaReserva={resetFlow}
+        />
+      ) : screen === 'dados' ? (
+        <DadosScreen
+          partySize={partySize}
+          dateLabel={dateLabel}
+          horario={selectedSlotLabel}
+          onBack={() => setScreen('horarios')}
+          onConfirm={async (dados: DadosReserva) => {
+            const result = await createReservationAction({
+              slotStartISO: selectedSlotISO,
+              partySize,
+              dados,
+            })
+            if (result.ok) {
+              setConfirmation({
+                nome: dados.nome,
+                codigo: result.codigo,
+                ocasiao: dados.ocasiao,
+              })
+              setScreen('confirmacao')
+            }
+            return result
+          }}
+        />
+      ) : screen === 'horarios' ? (
+        <HorariosScreen
+          partySize={partySize}
+          dateISO={selectedDate.iso}
+          dateLabel={dateLabel}
+          turno={turno}
+          onBack={() => setScreen('booking')}
+          onConfirm={(slotStart, horarioLabel) => {
+            setSelectedSlotISO(slotStart)
+            setSelectedSlotLabel(horarioLabel)
+            setScreen('dados')
+          }}
+        />
+      ) : (
+        <BookingScreen
+          partySize={partySize}
+          setPartySize={setPartySize}
+          dateIndex={dateIndex}
+          setDateIndex={setDateIndex}
+          turno={turno}
+          setTurno={setTurno}
+          dates={dates}
+          onContinue={() => setScreen('horarios')}
+        />
+      )}
+      <BetoChat />
+    </>
   )
 }
 
